@@ -7,7 +7,8 @@ namespace WebApplication1.Controllers;
 [Route("api/files")]
 public sealed class FilesController(
     CsvParser csvParser,
-    CsvStatisticsCalculator statisticsCalculator) : ControllerBase
+    CsvStatisticsCalculator statisticsCalculator,
+    CsvStorageService storageService) : ControllerBase
 {
     [HttpPost("upload")]
     [Consumes("multipart/form-data")]
@@ -20,7 +21,14 @@ public sealed class FilesController(
             return BadRequest("Файл не передан или пуст.");
         }
 
-        var extension = Path.GetExtension(file.FileName);
+        var fileName = Path.GetFileName(file.FileName);
+
+        if (string.IsNullOrWhiteSpace(fileName) || fileName.Length > 255)
+        {
+            return BadRequest("Имя файла должно содержать от 1 до 255 символов.");
+        }
+
+        var extension = Path.GetExtension(fileName);
 
         if (!string.Equals(extension, ".csv", StringComparison.OrdinalIgnoreCase))
         {
@@ -32,10 +40,16 @@ public sealed class FilesController(
             using var stream = file.OpenReadStream();
             var records = await csvParser.ParseAsync(stream, cancellationToken);
             var statistics = statisticsCalculator.Calculate(records);
+            var resultId = await storageService.SaveAsync(
+                fileName,
+                records,
+                statistics,
+                cancellationToken);
 
             return Ok(new
             {
-                FileName = file.FileName,
+                ResultId = resultId,
+                FileName = fileName,
                 SizeInBytes = file.Length,
                 Header = CsvParser.ExpectedHeader,
                 DataRowCount = records.Count,

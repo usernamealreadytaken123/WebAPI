@@ -9,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddScoped<CsvParser>();
 builder.Services.AddScoped<CsvStatisticsCalculator>();
+builder.Services.AddScoped<CsvStorageService>();
 
 var connectionString = builder.Configuration.GetConnectionString("PostgreSql")
     ?? throw new InvalidOperationException(
