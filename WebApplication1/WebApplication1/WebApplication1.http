@@ -1,6 +1,9 @@
 @WebApplication1_HostAddress = http://localhost:5069
 
-GET {{WebApplication1_HostAddress}}/weatherforecast/
+# Visual Studio HTTP Client does not support attaching a local file to a
+# multipart/form-data body. Use curl.exe from a second terminal for /upload.
+
+GET {{WebApplication1_HostAddress}}/openapi/v1.json
 Accept: application/json
 
 ###
