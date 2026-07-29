@@ -1,15 +1,19 @@
-using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
+using WebApplication1.Services;
 
 namespace WebApplication1.Controllers;
 
 [ApiController]
 [Route("api/files")]
-public sealed class FilesController : ControllerBase
+public sealed class FilesController(
+    CsvParser csvParser,
+    CsvStatisticsCalculator statisticsCalculator) : ControllerBase
 {
     [HttpPost("upload")]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> Upload(IFormFile? file)
+    public async Task<IActionResult> Upload(
+        IFormFile? file,
+        CancellationToken cancellationToken)
     {
         if (file is null || file.Length == 0)
         {
@@ -23,68 +27,25 @@ public sealed class FilesController : ControllerBase
             return BadRequest("Допускаются только CSV-файлы.");
         }
 
-        using var reader = new StreamReader(file.OpenReadStream());
-
-        var header = await reader.ReadLineAsync();
-        const string expectedHeader = "Date;ExecutionTime;Value";
-
-        if (!string.Equals(header, expectedHeader, StringComparison.Ordinal))
+        try
         {
-            return BadRequest($"Некорректный заголовок CSV. Ожидается: {expectedHeader}.");
+            using var stream = file.OpenReadStream();
+            var records = await csvParser.ParseAsync(stream, cancellationToken);
+            var statistics = statisticsCalculator.Calculate(records);
+
+            return Ok(new
+            {
+                FileName = file.FileName,
+                SizeInBytes = file.Length,
+                Header = CsvParser.ExpectedHeader,
+                DataRowCount = records.Count,
+                Records = records,
+                Statistics = statistics
+            });
         }
-
-        var dataRowCount = 0;
-
-        while (await reader.ReadLineAsync() is { } line)
+        catch (InvalidDataException exception)
         {
-            dataRowCount++;
-
-            var csvLineNumber = dataRowCount + 1;
-            var columns = line.Split(';');
-
-            if (columns.Length != 3)
-            {
-                return BadRequest(
-                    $"Строка {csvLineNumber}: ожидается 3 значения, разделённых символом ';'.");
-            }
-
-            if (!DateTime.TryParse(
-                    columns[0],
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.RoundtripKind,
-                    out _))
-            {
-                return BadRequest(
-                    $"Строка {csvLineNumber}: значение Date имеет неверный формат.");
-            }
-
-            if (!double.TryParse(
-                    columns[1],
-                    NumberStyles.Float,
-                    CultureInfo.InvariantCulture,
-                    out _))
-            {
-                return BadRequest(
-                    $"Строка {csvLineNumber}: значение ExecutionTime имеет неверный формат.");
-            }
-
-            if (!double.TryParse(
-                    columns[2],
-                    NumberStyles.Float,
-                    CultureInfo.InvariantCulture,
-                    out _))
-            {
-                return BadRequest(
-                    $"Строка {csvLineNumber}: значение Value имеет неверный формат.");
-            }
+            return BadRequest(exception.Message);
         }
-
-        return Ok(new
-        {
-            FileName = file.FileName,
-            SizeInBytes = file.Length,
-            Header = header,
-            DataRowCount = dataRowCount
-        });
     }
 }

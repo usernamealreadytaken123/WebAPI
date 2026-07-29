@@ -1,8 +1,21 @@
+using Microsoft.EntityFrameworkCore;
+using WebApplication1.Data;
+using WebApplication1.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<CsvParser>();
+builder.Services.AddScoped<CsvStatisticsCalculator>();
+
+var connectionString = builder.Configuration.GetConnectionString("PostgreSql")
+    ?? throw new InvalidOperationException(
+        "Строка подключения 'PostgreSql' не найдена.");
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
