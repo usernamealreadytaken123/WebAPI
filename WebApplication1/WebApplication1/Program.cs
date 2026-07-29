@@ -10,6 +10,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<CsvParser>();
 builder.Services.AddScoped<CsvStatisticsCalculator>();
 builder.Services.AddScoped<CsvStorageService>();
+builder.Services.AddScoped<ResultQueryService>();
 
 var connectionString = builder.Configuration.GetConnectionString("PostgreSql")
     ?? throw new InvalidOperationException(
