@@ -1,0 +1,192 @@
+<div class="app-shell">
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="CSV Analyzer — на главную">
+      <span class="brand-mark">CSV</span>
+      <span>
+        <strong>Analyzer</strong>
+        <small>Time-series workspace</small>
+      </span>
+    </a>
+
+    <div class="topbar-actions">
+      <nav class="primary-nav" aria-label="Разделы приложения">
+        <a href="#upload">Загрузка</a>
+        <a href="#results">Результаты</a>
+        <a href="#values">Значения</a>
+      </nav>
+      <div class="stack-badge" aria-label="Технологии проекта">
+        <span class="status-dot"></span>
+        Angular 21 · .NET 10 · PostgreSQL
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">Импорт временных рядов</p>
+      <h1 id="page-title">Загрузите CSV.<br />Получите расчёты.</h1>
+      <p class="intro-copy">
+        Сервис проверит структуру файла, рассчитает статистику и сохранит
+        результат вместе с исходными значениями.
+      </p>
+
+      <div class="requirements" aria-label="Требования к файлу">
+        <div>
+          <span>01</span>
+          <p><strong>Точный заголовок</strong>Date;ExecutionTime;Value</p>
+        </div>
+        <div>
+          <span>02</span>
+          <p><strong>До 10 000 строк</strong>Числа не меньше нуля</p>
+        </div>
+        <div>
+          <span>03</span>
+          <p><strong>Дата от 2000 года</strong>И не позже текущего момента</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="upload" class="upload-panel" aria-labelledby="upload-title">
+      <div class="panel-heading">
+        <div>
+          <p class="step-label">Шаг 1</p>
+          <h2 id="upload-title">Выберите файл</h2>
+        </div>
+        <span class="file-type">.CSV</span>
+      </div>
+
+      <form (submit)="upload($event)">
+        <div
+          class="drop-zone"
+          [class.is-dragging]="isDragging()"
+          [class.has-file]="selectedFile()"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+        >
+          <input
+            id="csv-file"
+            class="file-input"
+            type="file"
+            accept=".csv,text/csv"
+            (change)="onFileSelected($event)"
+          />
+
+          @if (selectedFile(); as file) {
+            <span class="upload-symbol selected">✓</span>
+            <p class="selected-name">{{ file.name }}</p>
+            <p class="drop-hint">{{ formatBytes(file.size) }} · готов к загрузке</p>
+            <label class="text-action" for="csv-file">Выбрать другой файл</label>
+          } @else {
+            <span class="upload-symbol">＋</span>
+            <p class="drop-title">Перетащите CSV сюда</p>
+            <p class="drop-hint">или выберите его на компьютере</p>
+            <label class="choose-button" for="csv-file">Выбрать файл</label>
+          }
+        </div>
+
+        <button
+          class="submit-button"
+          type="submit"
+          [disabled]="!selectedFile() || isUploading()"
+        >
+          @if (isUploading()) {
+            <span class="spinner" aria-hidden="true"></span>
+            Обрабатываем файл…
+          } @else {
+            Загрузить и рассчитать
+            <span aria-hidden="true">→</span>
+          }
+        </button>
+      </form>
+
+      @if (errorMessage()) {
+        <div class="message error" role="alert">
+          <strong>Файл не принят</strong>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+    </section>
+
+    @if (uploadResult(); as result) {
+      <section class="result-panel" aria-labelledby="result-title">
+        <div class="result-heading">
+          <div>
+            <p class="step-label success-label">Загрузка завершена</p>
+            <h2 id="result-title">{{ result.fileName }}</h2>
+          </div>
+          <span class="result-id">Результат #{{ result.resultId }}</span>
+        </div>
+
+        <div class="stat-grid">
+          <article>
+            <span>Диапазон</span>
+            <strong>{{ result.statistics.timeDeltaSeconds | number:'1.0-3' }} сек.</strong>
+          </article>
+          <article>
+            <span>Первая операция</span>
+            <strong>{{ result.statistics.firstOperationDate | date:'dd.MM.yyyy HH:mm:ss':'UTC' }}</strong>
+          </article>
+          <article>
+            <span>Среднее время</span>
+            <strong>{{ result.statistics.averageExecutionTime | number:'1.0-3' }}</strong>
+          </article>
+          <article>
+            <span>Среднее значение</span>
+            <strong>{{ result.statistics.averageValue | number:'1.0-3' }}</strong>
+          </article>
+          <article>
+            <span>Медиана</span>
+            <strong>{{ result.statistics.medianValue | number:'1.0-3' }}</strong>
+          </article>
+          <article>
+            <span>Мин. / Макс.</span>
+            <strong>
+              {{ result.statistics.minimumValue | number:'1.0-3' }} /
+              {{ result.statistics.maximumValue | number:'1.0-3' }}
+            </strong>
+          </article>
+        </div>
+
+        <div class="records-heading">
+          <h3>Загруженные значения</h3>
+          <span>{{ result.dataRowCount }} строк</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Дата</th>
+                <th>Время выполнения</th>
+                <th>Значение</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (record of result.records; track $index) {
+                <tr>
+                  <td>{{ record.date | date:'dd.MM.yyyy HH:mm:ss':'UTC' }}</td>
+                  <td>{{ record.executionTime | number:'1.0-3' }}</td>
+                  <td>{{ record.value | number:'1.0-3' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    <app-results-section id="results" [refreshToken]="resultRefreshToken()" />
+
+    <app-latest-values
+      id="values"
+      [initialFileName]="uploadResult()?.fileName ?? ''"
+      [refreshToken]="resultRefreshToken()"
+    />
+  </main>
+
+  <footer>
+    <span>CSV Analyzer</span>
+    <span>Тестовое задание · 2026</span>
+  </footer>
+</div>

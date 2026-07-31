@@ -1,0 +1,115 @@
+<section class="results-panel" aria-labelledby="results-title">
+  <div class="results-heading">
+    <div>
+      <p class="section-label">Сохранённые расчёты</p>
+      <h2 id="results-title">Результаты обработки</h2>
+      <p>Найдите ранее загруженный файл по одному или нескольким параметрам.</p>
+    </div>
+
+    <button class="refresh-button" type="button" (click)="loadResults()" [disabled]="isLoading()">
+      Обновить
+    </button>
+  </div>
+
+  <form class="filters" [formGroup]="filterForm" (submit)="applyFilters($event)">
+    <label class="wide-field">
+      <span>Имя файла</span>
+      <input type="text" formControlName="fileName" placeholder="Например, Sample.csv" />
+    </label>
+
+    <label>
+      <span>Дата от</span>
+      <input type="datetime-local" formControlName="firstOperationDateFrom" />
+    </label>
+
+    <label>
+      <span>Дата до</span>
+      <input type="datetime-local" formControlName="firstOperationDateTo" />
+    </label>
+
+    <label>
+      <span>Среднее значение от</span>
+      <input type="number" step="any" formControlName="averageValueFrom" placeholder="0" />
+    </label>
+
+    <label>
+      <span>Среднее значение до</span>
+      <input type="number" step="any" formControlName="averageValueTo" placeholder="100" />
+    </label>
+
+    <label>
+      <span>Среднее время от</span>
+      <input type="number" step="any" formControlName="averageExecutionTimeFrom" placeholder="0" />
+    </label>
+
+    <label>
+      <span>Среднее время до</span>
+      <input type="number" step="any" formControlName="averageExecutionTimeTo" placeholder="10" />
+    </label>
+
+    <div class="filter-actions">
+      <button class="apply-button" type="submit" [disabled]="isLoading()">
+        Применить фильтры
+      </button>
+      <button class="reset-button" type="button" (click)="resetFilters()" [disabled]="isLoading()">
+        Сбросить
+      </button>
+    </div>
+  </form>
+
+  @if (errorMessage()) {
+    <div class="state-message error" role="alert">
+      <strong>Не удалось загрузить результаты</strong>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  } @else if (isLoading()) {
+    <div class="state-message loading" role="status">
+      <span class="spinner" aria-hidden="true"></span>
+      Загружаем результаты…
+    </div>
+  } @else if (isLoaded() && results().length === 0) {
+    <div class="state-message empty">
+      <strong>Результаты не найдены</strong>
+      <span>Измените фильтры или сначала загрузите CSV-файл.</span>
+    </div>
+  } @else {
+    <div class="table-summary">
+      <span>Найдено: {{ results().length }}</span>
+      <span>Новые записи отображаются первыми</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Файл</th>
+            <th>Первая операция</th>
+            <th>Диапазон</th>
+            <th>Среднее время</th>
+            <th>Среднее значение</th>
+            <th>Медиана</th>
+            <th>Мин. / Макс.</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (result of results(); track result.id) {
+            <tr>
+              <td class="muted">#{{ result.id }}</td>
+              <td><strong>{{ result.fileName }}</strong></td>
+              <td>{{ result.firstOperationDate | date:'dd.MM.yyyy HH:mm:ss':'UTC' }}</td>
+              <td>{{ result.timeDeltaSeconds | number:'1.0-3' }} сек.</td>
+              <td>{{ result.averageExecutionTime | number:'1.0-3' }}</td>
+              <td>{{ result.averageValue | number:'1.0-3' }}</td>
+              <td>{{ result.medianValue | number:'1.0-3' }}</td>
+              <td>
+                {{ result.minimumValue | number:'1.0-3' }} /
+                {{ result.maximumValue | number:'1.0-3' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

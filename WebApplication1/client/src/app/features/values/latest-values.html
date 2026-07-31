@@ -1,0 +1,85 @@
+<section class="values-panel" aria-labelledby="values-title">
+  <div class="values-copy">
+    <p class="section-label">Исходные данные</p>
+    <h2 id="values-title">Последние 10 значений</h2>
+    <p>
+      Укажите точное имя загруженного файла. Значения выводятся от новых к старым.
+    </p>
+
+    <form (submit)="search($event)">
+      <label for="latest-file-name">Имя CSV-файла</label>
+      <div class="search-row">
+        <input
+          id="latest-file-name"
+          type="text"
+          [formControl]="fileNameControl"
+          placeholder="Например, Sample.csv"
+          maxlength="255"
+        />
+        <button type="submit" [disabled]="isLoading()">
+          @if (isLoading()) {
+            Ищем…
+          } @else {
+            Показать
+          }
+        </button>
+      </div>
+    </form>
+
+    <div class="method-note">
+      <span>GET</span>
+      <code>/api/values/latest</code>
+    </div>
+  </div>
+
+  <div class="values-output" aria-live="polite">
+    @if (errorMessage()) {
+      <div class="state-message error" role="alert">
+        <strong>Запрос не выполнен</strong>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    } @else if (isLoading()) {
+      <div class="state-message loading" role="status">
+        <span class="spinner" aria-hidden="true"></span>
+        Загружаем значения…
+      </div>
+    } @else if (!isSearched()) {
+      <div class="state-message placeholder">
+        <span class="placeholder-number">10</span>
+        <strong>Последних записей</strong>
+        <span>Поиск начнётся после ввода имени файла.</span>
+      </div>
+    } @else if (values().length === 0) {
+      <div class="state-message">
+        <strong>Значения не найдены</strong>
+        <span>Проверьте имя файла или сначала загрузите его.</span>
+      </div>
+    } @else {
+      <div class="output-heading">
+        <strong>{{ fileNameControl.value }}</strong>
+        <span>Получено: {{ values().length }}</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Время выполнения</th>
+              <th>Значение</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of values(); track item.id) {
+              <tr>
+                <td>{{ item.date | date:'dd.MM.yyyy HH:mm:ss':'UTC' }}</td>
+                <td>{{ item.executionTime | number:'1.0-3' }}</td>
+                <td><strong>{{ item.value | number:'1.0-3' }}</strong></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</section>

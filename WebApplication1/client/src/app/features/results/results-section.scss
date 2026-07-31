@@ -1,0 +1,266 @@
+:host {
+  display: block;
+  grid-column: 1 / -1;
+  scroll-margin-top: 24px;
+}
+
+.results-panel {
+  padding: clamp(24px, 4vw, 42px);
+  border: 1px solid #dfe6e1;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 26px 70px rgba(41, 66, 53, 0.08);
+}
+
+.results-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 30px;
+
+  h2,
+  p {
+    margin-top: 0;
+  }
+
+  h2 {
+    margin-bottom: 8px;
+    font-size: 1.8rem;
+    letter-spacing: -0.03em;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+    color: #66736c;
+    font-size: 0.88rem;
+  }
+}
+
+.section-label {
+  margin-bottom: 12px;
+  color: #168653;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.refresh-button,
+.reset-button {
+  border: 1px solid #ccd7cf;
+  border-radius: 10px;
+  background: #fff;
+  color: #314039;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.refresh-button {
+  min-height: 40px;
+  padding: 0 15px;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid #e1e7e3;
+  border-radius: 16px;
+  background: #f6f8f6;
+
+  label {
+    display: grid;
+    gap: 7px;
+  }
+
+  label > span {
+    color: #657169;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  input {
+    min-width: 0;
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1px solid #ccd6cf;
+    border-radius: 9px;
+    background: #fff;
+    color: #17211d;
+    font-size: 0.8rem;
+    outline: none;
+
+    &:focus {
+      border-color: #26905d;
+      box-shadow: 0 0 0 3px rgba(38, 144, 93, 0.1);
+    }
+  }
+}
+
+.wide-field {
+  grid-column: span 2;
+}
+
+.filter-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  grid-column: span 2;
+}
+
+.apply-button,
+.reset-button {
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+.apply-button {
+  border: 0;
+  border-radius: 10px;
+  background: #153f2e;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.state-message {
+  display: flex;
+  min-height: 120px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 22px;
+  border: 1px dashed #cbd6ce;
+  border-radius: 14px;
+  color: #66736c;
+  text-align: center;
+  font-size: 0.82rem;
+
+  strong {
+    color: #27332d;
+  }
+
+  &.error {
+    border-color: #efc8c2;
+    background: #fff5f3;
+    color: #8d3329;
+  }
+
+  &.loading {
+    flex-direction: row;
+  }
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #bdd0c4;
+  border-top-color: #168653;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.table-summary {
+  display: flex;
+  justify-content: space-between;
+  margin: 26px 0 12px;
+  color: #6e7a72;
+  font-size: 0.72rem;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e0e6e2;
+  border-radius: 14px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+th,
+td {
+  padding: 14px;
+  border-bottom: 1px solid #e7ebe8;
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  background: #f3f6f4;
+  color: #6b776f;
+  font-size: 0.66rem;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+tbody tr {
+  &:last-child td {
+    border-bottom: 0;
+  }
+
+  &:hover td {
+    background: #f8faf8;
+  }
+}
+
+.muted {
+  color: #7a867e;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 900px) {
+  .filters {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .results-panel {
+    padding: 22px 16px;
+    border-radius: 18px;
+  }
+
+  .results-heading,
+  .table-summary {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .filters {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .wide-field,
+  .filter-actions {
+    grid-column: auto;
+  }
+
+  .filter-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
