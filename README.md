@@ -6,7 +6,7 @@ WebAPI-приложение для загрузки, проверки и обр�
 
 ## Возможности
 
-- загрузка CSV-файла через HTTP-форму (multipart/form-data);;
+- загрузка CSV-файла через HTTP-форму (multipart/form-data);
 - валидация структуры и значений файла;
 - расчёт статистики по данным файла;
 - сохранение значений и результатов в PostgreSQL;
@@ -17,6 +17,28 @@ WebAPI-приложение для загрузки, проверки и обр�
 - Angular 21 SPA;
 - автоматические backend- и frontend-тесты;
 - запуск всего приложения одной командой через Docker Compose.
+
+## Веб-интерфейс
+
+Angular SPA объединяет все основные сценарии работы с приложением на одной странице.
+
+### Загрузка CSV-файла
+
+<p align="center">
+  <img src="images/spa-upload.png" alt="Загрузка CSV-файла и требования к его содержимому" width="100%">
+</p>
+
+### Поиск результатов
+
+<p align="center">
+  <img src="images/spa-results.png" alt="Фильтрация сохранённых результатов обработки CSV" width="100%">
+</p>
+
+### Последние значения
+
+<p align="center">
+  <img src="images/spa-latest-values.png" alt="Просмотр последних десяти значений выбранного файла" width="100%">
+</p>
 
 ## Технологии
 
@@ -34,13 +56,13 @@ WebAPI-приложение для загрузки, проверки и обр�
 
 ```mermaid
 flowchart LR
-    Browser["Браузер"] --> Nginx["Angular SPA и Nginx"]
-    Nginx -->|"/api"| Api["ASP.NET Core WebAPI"]
+    Browser["Angular SPA в браузере"] <-->|"HTTP"| Nginx["Nginx"]
+    Nginx <-->|"/api"| Api["ASP.NET Core WebAPI"]
     Api --> Parser["CSV Parser"]
     Api --> Statistics["Statistics Calculator"]
-    Api <--> Services["Storage и Query Services"]
-    Services <--> Ef["EF Core"]
-    Ef <--> Db[("PostgreSQL")]
+    Api <-->|"сохранение и запросы"| Services["Storage и Query Services"]
+    Services <-->|"LINQ и объекты"| Ef["EF Core"]
+    Ef <-->|"SQL и данные"| Db[("PostgreSQL")]
 ```
 
 Backend организован как небольшое слоистое приложение:
@@ -64,6 +86,7 @@ Backend организован как небольшое слоистое при
 ```text
 WebAPI/
 ├── README.md
+├── images/                       # скриншоты Angular SPA
 ├── WebApplication1/
 │   ├── WebApplication1/          # ASP.NET Core WebAPI
 │   ├── WebApplication1.Tests/    # backend-тесты
@@ -135,6 +158,8 @@ Date;ExecutionTime;Value
 
 Поле формы должно называться `file`.
 
+Из корня репозитория:
+
 ```powershell
 curl.exe -X POST "http://localhost:8080/api/files/upload" `
   -F "file=@.\WebApplication1\Sample.csv"
@@ -183,6 +208,8 @@ docker compose up -d --build
 ```
 
 При необходимости измените пароль и порты в созданном `.env` перед запуском.
+
+Файл `.env` содержит локальные настройки, включая пароль PostgreSQL, и не должен добавляться в Git. Он уже указан в `.gitignore`.
 
 После запуска доступны:
 
@@ -316,6 +343,4 @@ npm.cmd run build
 - пагинация метода получения результатов;
 - ограничение максимального размера загружаемого файла;
 - пакетная вставка значений для файлов большего размера;
-- PostgreSQL-интеграционные тесты через Testcontainers;
-- централизованная обработка ошибок через Problem Details;
-- аутентификация и авторизация при публикации приложения.
+- PostgreSQL-интеграционные тесты через Testcontainers.
