@@ -34,6 +34,10 @@ describe('App', () => {
     const compiled = fixture.nativeElement as HTMLElement;
 
     expect(compiled.querySelector('h1')?.textContent).toContain('Загрузите CSV');
+    expect(compiled.querySelector('.eyebrow')?.textContent)
+      .toContain('Загрузка и обработка CSV');
+    expect(compiled.querySelector('.requirements')?.textContent)
+      .toContain('От 1 до 10 000 строк');
     expect(compiled.querySelector('#results-title')?.textContent)
       .toContain('Результаты обработки');
     expect(compiled.querySelector('#values-title')?.textContent)
