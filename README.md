@@ -38,8 +38,8 @@ flowchart LR
     Nginx -->|"/api"| Api["ASP.NET Core WebAPI"]
     Api --> Parser["CSV Parser"]
     Api --> Statistics["Statistics Calculator"]
-    Api --> Services["Storage и Query Services"]
-    Services --> Ef["EF Core"]
+    Api <--> Services["Storage и Query Services"]
+    Services <--> Ef["EF Core"]
     Ef <--> Db[("PostgreSQL")]
 ```
 
