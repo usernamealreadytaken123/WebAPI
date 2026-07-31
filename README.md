@@ -197,6 +197,15 @@ curl.exe "http://localhost:8080/api/values/latest?fileName=Sample.csv"
 
 - Docker Desktop с поддержкой Docker Compose.
 
+### Получение проекта
+
+Если репозиторий ещё не клонирован, выполните:
+
+```powershell
+git clone https://github.com/usernamealreadytaken123/WebAPI.git
+cd .\WebAPI
+```
+
 ### Запуск
 
 Из корня репозитория:
@@ -219,6 +228,8 @@ docker compose up -d --build
 | Swagger | <http://localhost:8080/swagger/index.html> |
 | WebAPI | <http://localhost:8080> |
 | PostgreSQL | `localhost:5433` |
+
+Корневой адрес WebAPI не содержит веб-страницы и может вернуть `404 Not Found` — это ожидаемое поведение. Для проверки API используйте Swagger или конкретные адреса `/api/...`.
 
 Проверка состояния контейнеров:
 
@@ -250,7 +261,15 @@ docker compose down
 
 ### Backend
 
-Создайте базу `timescale_db` и сохраните строку подключения через User Secrets:
+Запустите локальный PostgreSQL. Затем подключитесь в pgAdmin к серверу, выберите служебную базу `postgres`, откройте **Query Tool** и выполните:
+
+```sql
+CREATE DATABASE timescale_db;
+```
+
+Если база `timescale_db` уже существует, повторно создавать её не нужно.
+
+После этого из корня репозитория сохраните строку подключения через User Secrets и запустите WebAPI:
 
 ```powershell
 cd .\WebApplication1\WebApplication1
@@ -265,7 +284,9 @@ Remove-Variable securePassword, plainPassword
 dotnet run --launch-profile http
 ```
 
-Миграции EF Core применяются автоматически при запуске. Backend будет доступен на `http://localhost:5069`.
+Миграции EF Core применяются автоматически при запуске. Backend будет доступен на `http://localhost:5069`, а Swagger — на <http://localhost:5069/swagger/index.html>.
+
+Корневой адрес `http://localhost:5069` также может вернуть `404 Not Found`. Для проверки локально запущенного API используйте Swagger или адреса `/api/...`.
 
 ### Frontend
 
